@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mid-Term Assessment | Nexus Academy</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- NEXUS ACADEMY THEME --- */
+        :root {
+            --primary-bg: #0f172a; 
+            --card-bg: #1e293b; 
+            --accent-color: #0d6efd; 
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+        }
+
+        body {
+            background-color: var(--primary-bg);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 850px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- WELCOME SCREEN --- */
+        .welcome-screen { text-align: center; padding: 60px 30px; }
+        .welcome-icon { font-size: 4rem; color: var(--accent-color); margin-bottom: 20px; }
+
+        /* --- QUIZ UI --- */
+        .quiz-header { padding: 30px; border-bottom: 1px solid var(--border-color); position: relative; }
+        .course-badge { color: #60a5fa; font-weight: 700; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
+        
+        /* TIMER UI */
+        .timer-badge {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .timer-badge.warning { background-color: rgba(239, 68, 68, 0.8); color: white; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        .progress-container { height: 8px; background-color: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 20px; overflow: hidden; }
+        .progress-bar-custom { height: 100%; background-color: var(--accent-color); transition: width 0.3s ease; }
+
+        .quiz-body { padding: 40px 30px; min-height: 400px; }
+        .question-meta { font-size: 0.9rem; color: var(--warning-color); font-weight: 600; margin-bottom: 10px; display: block; text-transform: uppercase; letter-spacing: 1px; }
+        .question-text { font-size: 1.4rem; font-weight: 700; margin-bottom: 30px; line-height: 1.4; }
+        
+        .option-btn {
+            display: flex; width: 100%; text-align: left; align-items: center;
+            background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 15px 20px; border-radius: 10px;
+            margin-bottom: 15px; font-size: 1.05rem; transition: all 0.2s ease; cursor: pointer;
+        }
+        .option-btn:hover { background-color: rgba(255,255,255,0.08); }
+        .option-btn.selected { background-color: rgba(13, 110, 253, 0.15); border-color: var(--accent-color); color: #fff; box-shadow: 0 0 0 2px rgba(13,110,253,0.3); }
+        
+        .option-icon { margin-right: 15px; font-size: 1.2rem; color: var(--text-muted); }
+        .option-btn.selected .option-icon { color: var(--accent-color); }
+
+        .navigator-section { padding: 0 30px 20px 30px; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(35px, 1fr)); gap: 8px; }
+        .nav-box {
+            height: 35px; display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; border: 1px solid var(--border-color); cursor: pointer;
+            font-weight: 600; font-size: 0.85rem; transition: 0.2s; 
+            background: rgba(255,255,255,0.03); color: var(--text-muted);
+        }
+        .nav-box:hover { background: rgba(255,255,255,0.1); }
+        .nav-box.answered { background: rgba(13, 110, 253, 0.2); border-color: var(--accent-color); color: #fff; }
+        .nav-box.current { box-shadow: 0 0 0 2px #fff; border-color: #fff; color: #fff; }
+
+        .quiz-footer {
+            padding: 20px 30px; border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: rgba(0,0,0,0.1);
+        }
+
+        /* --- RESULTS SCREEN --- */
+        .results-screen { display: none; text-align: center; padding: 60px 30px; }
+        .score-circle {
+            width: 180px; height: 180px; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            margin: 0 auto 30px auto; font-size: 2.2rem; font-weight: 800; border: 8px solid;
+            background-color: rgba(0,0,0,0.2); line-height: 1;
+        }
+
+        
+        .score-circle i { font-size: 3.5rem; margin-bottom: 5px; }
+        .score-pass { border-color: var(--success-color); color: var(--success-color); }
+        .score-fail { border-color: var(--danger-color); color: var(--danger-color); }
+
+        /* Mobile adjustments */
+        @media (max-width: 576px) {
+            .timer-badge { position: relative; top: 0; right: 0; display: inline-flex; margin-top: 15px; }
+            .quiz-header { padding: 20px; }
+            .quiz-body { padding: 30px 20px; min-height: auto; }
+            .navigator-section { padding: 0 20px 20px 20px; }
+            .quiz-footer { padding: 20px; flex-direction: column; gap: 10px; }
+            .quiz-footer button { width: 100%; }
+            .question-text { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        
+        <div id="welcomeScreen" class="welcome-screen">
+            <i class="bi bi-laptop welcome-icon"></i>
+            <h1 class="fw-bold mb-3">Mid-Term Assessment</h1>
+            <p class="text-bright mb-4 fs-5">Web Development to React Architecture</p>
+            
+            <div class="row justify-content-center mb-5 text-start">
+                <div class="col-md-8">
+                    <div class="p-4 rounded" style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color);">
+                        <ul class="mb-0 text-bright" style="line-height: 1.8;">
+                            <li><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>50 Questions</strong> (Mix of MCQs & Multi-Select)</li>
+                            <li><i class="bi bi-clock-fill text-warning me-2"></i> <strong>40 Minutes</strong> strict time limit</li>
+                            <li><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Quiz will automatically submit when timer reaches 00:00</li>
+                            <li><i class="bi bi-award-fill text-primary me-2"></i> <strong>70%</strong> required to pass</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary btn-lg fw-bold px-5 py-3 rounded-pill shadow-lg" onclick="startQuiz()">
+                Begin Assessment <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+            </button>
+        </div>
+
+        <div id="quizUI" style="display: none;">
+            <div class="quiz-header">
+                <span class="course-badge">Nexus Academy Mid-Term</span>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <h3 class="mb-0 fw-bold">Frontend Engineering</h3>
+                    <span class="badge bg-secondary rounded-pill px-3 py-2" id="questionTracker">Q 1 / 50</span>
+                </div>
+                
+                <div class="timer-badge" id="timerBadge">
+                    <i class="bi bi-stopwatch"></i> <span id="timeDisplay">40:00</span>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-bar-custom" id="progressBar" style="width: 2%;"></div>
+                </div>
+            </div>
+
+            <div class="quiz-body">
+                <span id="questionMeta" class="question-meta">Select one option</span>
+                <div class="question-text" id="questionText">Loading question...</div>
+                <div id="optionsContainer"></div>
+            </div>
+
+            <div class="navigator-section border-top pt-4">
+                <h6 class="text-bright mb-3" style="font-size: 0.85rem; text-transform: uppercase;">Question Navigator</h6>
+                <div id="questionNavigator" class="nav-grid"></div>
+            </div>
+
+            <div class="quiz-footer">
+                <button class="btn btn-outline-light fw-bold px-4 rounded-pill" id="prevBtn" onclick="changeQuestion(-1)">
+                    <i class="bi bi-arrow-left me-2"></i>Previous
+                </button>
+                <button class="btn btn-primary fw-bold px-4 rounded-pill" id="nextBtn" onclick="changeQuestion(1)">
+                    Next<i class="bi bi-arrow-right ms-2"></i>
+                </button>
+                <button class="btn btn-success fw-bold px-4 rounded-pill d-none" id="submitBtn" onclick="manualSubmit()">
+                    <i class="bi bi-check-circle-fill me-2"></i>Submit
+                </button>
+            </div>
+        </div>
+
+        <div id="resultsUI" class="results-screen">
+            <h2 class="fw-bold mb-4" id="resultGreeting">Assessment Complete</h2>
+            <div class="score-circle" id="scoreCircle"></div>
+            <h4 class="text-white mb-3" id="scoreFraction">You scored X out of 50</h4>
+            <p class="lead text-bright mb-5 px-md-5" id="resultMessage"></p>
+            <div id="actionButtons"></div>
+        </div>
+
+    </div>
+
+    <script>
+         
+           const quizData = [
+            // ==========================================================
+            // TIER 1: EASY (Questions 1 - 15) - Core Fundamentals
+            // ==========================================================
+            { type: 'single', q: "Which HTML tag is used to create a hyperlink?", options: ["<link>", "<a>", "<href>", "<hyper>"], answer: 1 },
+            { type: 'single', q: "In CSS, which property changes the text color of an element?", options: ["font-color", "color", "text-style", "background-color"], answer: 1 },
+            { type: 'multiple', q: "Which of the following keywords are used to declare variables in modern JavaScript? (Select all that apply)", options: ["var", "let", "const", "def"], answer: [0, 1, 2] },
+            { type: 'single', q: "What does 'JSX' stand for in React development?", options: ["JavaScript XML", "Java Syntax Extension", "JSON X", "JavaScript X-Mode"], answer: 0 },
+            { type: 'single', q: "Which HTML tag is used to link an external CSS stylesheet?", options: ["<script>", "<style>", "<css>", "<link>"], answer: 3 },
+            { type: 'single', q: "What will `console.log(1 + '1')` output in JavaScript?", options: ["2", "\"2\"", "\"11\"", "NaN"], answer: 2 },
+            { type: 'single', q: "What is a React Component conceptually?", options: ["A database table", "A CSS stylesheet", "A JavaScript function that returns UI markup", "A backend server route"], answer: 2 },
+            { type: 'multiple', q: "Which of the following are parts of the standard CSS Box Model? (Select all that apply)", options: ["Margin", "Padding", "Border", "Spacing"], answer: [0, 1, 2] },
+            { type: 'multiple', q: "Which of the following values are considered 'falsy' in JavaScript? (Select all that apply)", options: ["0", "\"0\"", "null", "undefined"], answer: [0, 2, 3] },
+            { type: 'single', q: "In React, what is the strict rule regarding returning elements from a component?", options: ["You must return exactly two elements", "You must return a single parent element or Fragment", "You cannot use standard HTML tags", "Variables must be in uppercase"], answer: 1 },
+            { type: 'single', q: "Which CSS property is used to completely hide an element and remove it from the document flow?", options: ["visibility: hidden;", "opacity: 0;", "display: none;", "z-index: -1;"], answer: 2 },
+            { type: 'single', q: "What is the difference between `==` and `===` in JavaScript?", options: ["`===` assigns a value, `==` compares", "`===` compares both value and data type strictly", "They are exactly the same", "`==` is for strings, `===` is for numbers"], answer: 1 },
+            { type: 'single', q: "Why must you use `className` instead of `class` in JSX?", options: ["Because 'class' is a reserved keyword in JavaScript", "Because React uses a different CSS standard", "Because 'className' renders faster", "It is just a stylistic preference"], answer: 0 },
+            { type: 'multiple', q: "Which of the following are valid HTML5 input types for a form? (Select all that apply)", options: ["email", "password", "username", "date"], answer: [0, 1, 3] },
+            { type: 'single', q: "What is the default position value for all HTML elements?", options: ["relative", "absolute", "static", "fixed"], answer: 2 },
+
+            // ==========================================================
+            // TIER 2: MEDIUM (Questions 16 - 35) - Application & Logic
+            // ==========================================================
+            { type: 'single', q: "What does the `.map()` method do to a JavaScript array?", options: ["Sorts the array alphabetically", "Executes a function on each element and returns a new array with the results", "Removes the last element", "Loops through the array without returning anything"], answer: 1 },
+            { type: 'single', q: "When you call `useState(0)` in React, what exactly does it return?", options: ["An object with data and methods", "A single integer", "An array containing the current state value and a function to update it", "A boolean"], answer: 2 },
+            { type: 'multiple', q: "In CSS Flexbox, which properties are used to center an item perfectly in the middle of its container? (Select all that apply)", options: ["justify-content: center;", "align-items: center;", "float: center;", "text-align: middle;"], answer: [0, 1] },
+            { type: 'single', q: "Which Vanilla JS DOM method selects the FIRST element that matches a CSS selector?", options: ["getElementById", "getElementsByClassName", "querySelector", "querySelectorAll"], answer: 2 },
+            { type: 'single', q: "How do you pass dynamic data from a Parent component down to a Child component in React?", options: ["Via State", "Via Props", "Via LocalStorage", "Via Redux"], answer: 1 },
+            { type: 'single', q: "When rendering a list of elements using `.map()` in React, what special prop is required on the top-level element?", options: ["id", "index", "key", "ref"], answer: 2 },
+            { type: 'single', q: "Which is the correct syntax for an ES6 Arrow Function?", options: ["function => myFunc() {}", "const myFunc = () => {}", "=> myFunc() {}", "let myFunc() => {}"], answer: 1 },
+            { type: 'single', q: "How do you correctly attach a click event listener in React without firing it on page load?", options: ["onClick={myFunction()}", "onClick=\"myFunction()\"", "onClick={myFunction}", "on-click=\"myFunction\""], answer: 2 },
+            { type: 'single', q: "What does `e.preventDefault()` do when placed inside a form's `onSubmit` handler?", options: ["Stops the event from bubbling up the DOM", "Prevents the browser from doing a full page refresh", "Clears the form inputs", "Submits the data to the server securely"], answer: 1 },
+            { type: 'multiple', q: "Which of the following are potential states of a JavaScript Promise? (Select all that apply)", options: ["Pending", "Fulfilled", "Rejected", "Awaiting"], answer: [0, 1, 2] },
+            { type: 'single', q: "In React Router, why do we use the `<Link>` component instead of standard `<a href>` tags?", options: ["It adds automatic CSS styling", "It encrypts the URL", "It updates the UI without causing a full browser refresh", "It is required for mobile responsiveness"], answer: 2 },
+            { type: 'single', q: "In CSS Grid, what property is used to define the number and width of columns?", options: ["grid-columns", "flex-columns", "grid-template-columns", "column-count"], answer: 2 },
+            { type: 'single', q: "How do you securely change the text inside an HTML element using Vanilla JS without executing potential HTML tags?", options: ["element.innerHTML", "element.textContent", "element.value", "element.write()"], answer: 1 },
+            { type: 'single', q: "Which array method returns a brand new array containing ONLY the elements that pass a specific condition?", options: ["map()", "reduce()", "forEach()", "filter()"], answer: 3 },
+            { type: 'single', q: "What is the critical industry rule regarding updating React State?", options: ["Never mutate it directly; always use the setter function", "State must be updated directly using the equals sign", "State can only be updated inside a loop", "State can never be updated once set"], answer: 0 },
+            { type: 'single', q: "How do you inject a JavaScript variable named `user` into a template literal string?", options: ["'Hello, ' + user", "Hello, ${user}", "`Hello, ${user}`", "`Hello, {user}`"], answer: 2 },
+            { type: 'multiple', q: "Which of the following are necessary to create a 'Controlled Component' input field in React? (Select all that apply)", options: ["A `value` prop tied to a state variable", "An `onChange` event handler", "An `id` attribute", "A `type='controlled'` attribute"], answer: [0, 1] },
+            { type: 'single', q: "In `function UserCard({ name, age })`, what ES6 feature is being used to unpack the props?", options: ["Concatenation", "Spread Operator", "Destructuring", "Rest Parameters"], answer: 2 },
+            { type: 'single', q: "Which syntax represents a conditional (ternary) operator often used for Conditional Rendering in React?", options: ["condition ? true : false", "if condition then true else false", "condition = true || false", "condition ?? true : false"], answer: 0 },
+            { type: 'single', q: "How do you apply a CSS style ONLY if the screen is 768px wide or smaller?", options: ["@screen (max-width: 768px)", "@media (max-width: 768px)", "@responsive (below: 768px)", "@viewport (width < 768px)"], answer: 1 },
+
+            // ==========================================================
+            // TIER 3: HARD (Questions 36 - 50) - Scenarios & Architecture
+            // ==========================================================
+            { type: 'single', q: "SCENARIO: You have a 'Sidebar' component and a 'MainView' component that are siblings. Both need access to the same `userProfile` data. What is the standard architectural solution?", options: ["Store the data in LocalStorage", "Duplicate the `useState` in both children", "Lift the state up to their closest common Parent component", "Use `document.getElementById` to pass data between them"], answer: 2 },
+            { type: 'single', q: "SCENARIO: You click a 'Submit' button on a React form, and the page flashes white, wiping out all your state data. What did you forget to do?", options: ["You forgot to use `e.preventDefault()` in the onSubmit handler.", "You forgot to make the component async.", "You forgot to connect to a backend server.", "You used `const` instead of `let`."], answer: 0 },
+            { type: 'single', q: "SCENARIO: You want a button to delete User #5 when clicked. However, writing `onClick={deleteUser(5)}` causes User #5 to be deleted instantly when the page loads. How do you fix this?", options: ["Use `onClick=\"deleteUser(5)\"`", "Wrap it in an arrow function: `onClick={() => deleteUser(5)}`", "Use `setTimeout` around the function.", "Put the ID in the button's `id` attribute instead."], answer: 1 },
+            { type: 'single', q: "SCENARIO: A function returns another function, and that inner function still has access to the variables of the outer function even after the outer function has finished executing. What is this concept called in JavaScript?", options: ["Hoisting", "Event Bubbling", "A Closure", "A Promise"], answer: 2 },
+            { type: 'single', q: "SCENARIO: You are fetching data from an API using `fetch()`. You need the code to pause and wait for the API to respond before running the next line of code. Which keywords should you use?", options: ["try / catch", "async / await", "pause / resume", "yield / next"], answer: 1 },
+            { type: 'single', q: "SCENARIO: You have a global `Layout` component containing your Navbar and Footer. Where should you place the `<Outlet />` component from React Router?", options: ["Outside the Layout component", "Inside the Navbar", "Between the Navbar and Footer where you want the page views to render", "In the index.html file"], answer: 2 },
+            { type: 'multiple', q: "SCENARIO: You are updating a user object in state: `const [user, setUser] = useState({name: 'Ali', age: 25})`. Which of the following are safe, immutable ways to change the age to 26? (Select all that apply)", options: ["user.age = 26;", "setUser({ name: user.name, age: 26 });", "setUser({ ...user, age: 26 });", "user = {name: 'Ali', age: 26};"], answer: [1, 2] },
+            { type: 'single', q: "SCENARIO: You have an onClick event on a `<button>`, but that button is inside a `<div>` that also has an onClick event. Clicking the button triggers BOTH events. What JavaScript concept causes this?", options: ["Event Hoisting", "Event Bubbling (Propagation)", "Scope Bleeding", "Asynchronous Execution"], answer: 1 },
+            { type: 'single', q: "SCENARIO: An element has a CSS class `.text-red { color: red; }` but it also has an inline style `<div style=\"color: blue;\">`. What color will the text be?", options: ["Red, because classes have higher specificity.", "Blue, because inline styles have higher specificity.", "Purple, because the colors mix.", "Black, because they cancel each other out."], answer: 1 },
+            { type: 'multiple', q: "SCENARIO: You render 100 product cards using `.map()` but forget to add the `key` prop. What are the consequences? (Select all that apply)", options: ["React will throw a warning in the console.", "The page will immediately crash and show a blank screen.", "React will struggle to efficiently track which specific items are added, removed, or changed.", "The CSS will fail to load on those elements."], answer: [0, 2] },
+            { type: 'single', q: "SCENARIO: Your application requires passing a `themeColor` prop down through 8 levels of components. Most middle components don't even use the prop. What is this architectural pain point called?", options: ["State Lifting", "Prop Drilling", "Component Sinking", "Data Bleeding"], answer: 1 },
+            { type: 'multiple', q: "SCENARIO: You are building a Product Gallery. Which of the following is the standard way to conditionally apply an 'active' CSS class to the currently selected thumbnail image? (Select all that apply)", options: ["className={imgUrl === activeImg ? 'thumb active' : 'thumb'}", "className={`thumb ${imgUrl === activeImg ? 'active' : ''}`}", "document.getElementById(img).classList.add('active')", "if (active) { className='active' }"], answer: [0, 1] },
+            { type: 'single', q: "SCENARIO: In a professional React project structure, what is the conceptual difference between the `/pages` folder and the `/components` folder?", options: ["Pages contain CSS, Components contain JS.", "Pages are full screen views mapped to Routes; Components are small, reusable UI blocks.", "Pages are backend code, Components are frontend code.", "There is no difference, it is just personal preference."], answer: 1 },
+            { type: 'single', q: "SCENARIO: You receive an array of objects called `students` as a prop. You want to render a list of `<li>` tags showing only students who are active. Which two array methods should you chain together?", options: [".reduce() then .map()", ".forEach() then .filter()", ".filter() then .map()", ".sort() then .forEach()"], answer: 2 },
+            { type: 'single', q: "SCENARIO: Data in React flows strictly in one direction. Which direction is this?", options: ["Sideways, between siblings", "Upwards, from Child to Parent", "Downwards, from Parent to Child", "Randomly, based on user interaction"], answer: 2 }
+        ];
+
+        // --- ENGINE VARIABLES ---
+        let currentQuestionIndex = 0;
+        let userAnswers = quizData.map(q => q.type === 'multiple' ? [] : null);
+        let timeRemaining = 40 * 60; // 40 minutes in seconds
+        let timerInterval;
+
+        // --- DOM ELEMENTS ---
+        const welcomeScreen = document.getElementById('welcomeScreen');
+        const quizUI = document.getElementById('quizUI');
+        const resultsUI = document.getElementById('resultsUI');
+        
+        const questionText = document.getElementById('questionText');
+        const questionMeta = document.getElementById('questionMeta');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const tracker = document.getElementById('questionTracker');
+        const progressBar = document.getElementById('progressBar');
+        const navGrid = document.getElementById('questionNavigator');
+        
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const timerBadge = document.getElementById('timerBadge');
+
+        // --- CORE FUNCTIONS ---
+
+        function startQuiz() {
+            welcomeScreen.style.display = 'none';
+            quizUI.style.display = 'block';
+            
+            loadQuestion();
+            
+            // Start Timer
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerUI();
+
+                if (timeRemaining <= 60) {
+                    timerBadge.classList.add('warning'); // Pulse red for last 60 seconds
+                }
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    autoSubmit();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            let m = Math.floor(timeRemaining / 60).toString().padStart(2, '0');
+            let s = (timeRemaining % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${m}:${s}`;
+        }
+
+        function loadQuestion() {
+            const currentData = quizData[currentQuestionIndex];
+            
+            // Render text and meta
+            questionText.innerText = `${currentQuestionIndex + 1}. ${currentData.q}`;
+            if(currentData.type === 'multiple') {
+                questionMeta.innerText = `<i class="bi bi-ui-checks me-1"></i> Multi-Select: Choose all correct answers`;
+                questionMeta.style.color = "var(--warning-color)";
+            } else {
+                questionMeta.innerText = `<i class="bi bi-ui-radios me-1"></i> Single Choice: Choose one option`;
+                questionMeta.style.color = "#94a3b8"; // Muted
+            }
+
+            // Render progress
+            tracker.innerText = `Q ${currentQuestionIndex + 1} / ${quizData.length}`;
+            const progressPercentage = ((currentQuestionIndex + 1) / quizData.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            // Render Options
+            optionsContainer.innerText = '';
+            currentData.options.forEach((option, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'option-btn';
+                
+                // Icon based on type
+                const iconClass = currentData.type === 'multiple' ? 'bi-square' : 'bi-circle';
+                const iconClassSelected = currentData.type === 'multiple' ? 'bi-check-square-fill' : 'bi-check-circle-fill';
+                
+                // Check if currently selected
+                const uAns = userAnswers[currentQuestionIndex];
+                const isSelected = currentData.type === 'multiple' ? uAns.includes(index) : uAns === index;
+                
+                if (isSelected) btn.classList.add('selected');
+
+                btn.innerText = `
+                    <i class="bi ${isSelected ? iconClassSelected : iconClass} option-icon"></i>
+                    <span>${option}</span>
+                `;
+                
+                btn.onclick = () => selectOption(index, btn, iconClass, iconClassSelected);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Button visibility
+            prevBtn.disabled = currentQuestionIndex === 0;
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.classList.add('d-none');
+                submitBtn.classList.remove('d-none');
+            } else {
+                nextBtn.classList.remove('d-none');
+                submitBtn.classList.add('d-none');
+            }
+            
+            renderNavigator();
+        }
+
+        function selectOption(selectedIndex, btnElement, iconClass, iconClassSelected) {
+            const currentQ = quizData[currentQuestionIndex];
+            
+            if (currentQ.type === 'multiple') {
+                // MULTI SELECT LOGIC
+                let ansArray = userAnswers[currentQuestionIndex];
+                const icon = btnElement.querySelector('.option-icon');
+                
+                if (ansArray.includes(selectedIndex)) {
+                    // Deselect
+                    userAnswers[currentQuestionIndex] = ansArray.filter(i => i !== selectedIndex);
+                    btnElement.classList.remove('selected');
+                    icon.classList.replace(iconClassSelected, iconClass);
+                } else {
+                    // Select
+                    ansArray.push(selectedIndex);
+                    btnElement.classList.add('selected');
+                    icon.classList.replace(iconClass, iconClassSelected);
+                }
+            } else {
+                // SINGLE SELECT LOGIC
+                userAnswers[currentQuestionIndex] = selectedIndex;
+                const allBtns = optionsContainer.querySelectorAll('.option-btn');
+                allBtns.forEach(btn => {
+                    btn.classList.remove('selected');
+                    btn.querySelector('.option-icon').classList.replace(iconClassSelected, iconClass);
+                });
+                
+                btnElement.classList.add('selected');
+                btnElement.querySelector('.option-icon').classList.replace(iconClass, iconClassSelected);
+            }
+            
+            renderNavigator(); 
+        }
+
+        function changeQuestion(direction) {
+            currentQuestionIndex += direction;
+            loadQuestion();
+        }
+
+        function renderNavigator() {
+            navGrid.innerHTML = '';
+            for (let i = 0; i < quizData.length; i++) {
+                const box = document.createElement('div');
+                box.className = 'nav-box';
+                box.innerText = i + 1;
+                
+                if (i === currentQuestionIndex) box.classList.add('current');
+                
+                // Determine if answered
+                const uAns = userAnswers[i];
+                const isAnswered = quizData[i].type === 'multiple' ? uAns.length > 0 : uAns !== null;
+                if (isAnswered) box.classList.add('answered');
+                
+                box.onclick = () => { currentQuestionIndex = i; loadQuestion(); };
+                navGrid.appendChild(box);
+            }
+        }
+
+        function manualSubmit() {
+            // Count unanswered
+            let skipped = 0;
+            for(let i=0; i<quizData.length; i++){
+                if(quizData[i].type === 'multiple' && userAnswers[i].length === 0) skipped++;
+                if(quizData[i].type === 'single' && userAnswers[i] === null) skipped++;
+            }
+
+            if (skipped > 0) {
+                const confirmSubmit = confirm(`Wait! You have ${skipped} unattempted questions. Are you sure you want to submit?`);
+                if (!confirmSubmit) return; 
+            }
+            
+            clearInterval(timerInterval);
+            processResults();
+        }
+
+        function autoSubmit() {
+            alert("Time is up! Your assessment is being submitted automatically.");
+            processResults();
+        }
+
+        function processResults() {
+            let score = 0;
+
+            for (let i = 0; i < quizData.length; i++) {
+                const q = quizData[i];
+                const uAns = userAnswers[i];
+                
+                if (q.type === 'multiple') {
+                    // Arrays must match exactly (sort them first to ensure order doesn't matter)
+                    const correctSorted = [...q.answer].sort().toString();
+                    const userSorted = [...uAns].sort().toString();
+                    if (correctSorted === userSorted) score++;
+                } else {
+                    if (uAns === q.answer) score++;
+                }
+            }
+
+            const percentage = Math.round((score / quizData.length) * 100);
+
+            // Hide UI, Show Results
+            quizUI.style.display = 'none';
+            resultsUI.style.display = 'block';
+
+            const scoreCircle = document.getElementById('scoreCircle');
+            const resultMessage = document.getElementById('resultMessage');
+            const actionButtons = document.getElementById('actionButtons');
+            
+            document.getElementById('scoreFraction').innerText = `You scored ${score} out of ${quizData.length}`;
+
+            if (percentage >= 70) {
+                // PASS
+                scoreCircle.className = "score-circle score-pass shadow-lg";
+                scoreCircle.innerHTML = `<i class="bi bi-check-circle-fill"></i><span>${percentage}%</span>`;
+                resultMessage.innerHTML = "<strong class='text-white'>Outstanding!</strong> You have passed the Mid-Term Assessment. You are fully prepared to move forward into building complex React applications.";
+                actionButtons.innerHTML = `<button class="btn btn-success fw-bold px-5 py-3 rounded-pill shadow-lg" onclick="takeNextStep()">Proceed to Module 6 <i class="bi bi-rocket-takeoff-fill ms-2"></i></button>`;
+            } else {
+                // FAIL
+                scoreCircle.className = "score-circle score-fail shadow-lg";
+                scoreCircle.innerHTML = `<i class="bi bi-x-circle-fill"></i><span>${percentage}%</span>`;
+                resultMessage.innerHTML = "<strong class='text-white'>Don't give up.</strong> You didn't reach the 70% passing mark. Please review your notes on the previous modules and try again.";
+                actionButtons.innerHTML = `<button class="btn btn-danger fw-bold px-5 py-3 rounded-pill shadow-lg" onclick="retryQuiz()"><i class="bi bi-arrow-clockwise me-2"></i> Retake Assessment</button>`;
+            }
+        }
+
+        function retryQuiz() {
+            currentQuestionIndex = 0;
+            userAnswers = quizData.map(q => q.type === 'multiple' ? [] : null);
+            timeRemaining = 40 * 60;
+            timerBadge.classList.remove('warning');
+            
+            resultsUI.style.display = 'none';
+            welcomeScreen.style.display = 'block'; // Send back to launch screen
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function takeNextStep() {
+            if (window.self !== window.top) parent.document.querySelector('.btn-close').click();
+            else window.location.href = "dashboard.html"; 
+        }
+
+    </script>
+</body>
+</html>
