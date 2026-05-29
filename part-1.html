@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 17: Project Planning & Scope | Nexus Academy</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* LMS DARK THEME */
+        :root {
+            --primary-bg: #0f172a; 
+            --card-bg: #1e293b; 
+            --accent-color: #0d6efd; 
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            background-color: var(--primary-bg); 
+            font-family: 'Inter', sans-serif;
+            padding: 20px;
+            color: var(--text-main);
+        }
+
+        .action-bar { 
+            max-width: 800px; 
+            margin: 0 auto 20px auto; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        
+        .document-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--card-bg);
+            padding: 50px 60px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        .doc-header { border-bottom: 2px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
+        
+        .course-name {
+            display: inline-block;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #60a5fa; 
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .doc-header h1 { font-weight: 800; color: var(--text-main); margin-bottom: 8px; font-size: 2.2rem; line-height: 1.2; }
+        .module-name { color: var(--text-muted); margin: 0; font-weight: 500; font-size: 1.1rem; }
+        h2 { font-weight: 700; color: var(--text-main); margin-top: 35px; margin-bottom: 15px; font-size: 1.5rem; }
+        p, ul, ol { line-height: 1.7; font-size: 1.05rem; margin-bottom: 20px; color: #cbd5e1; }
+        
+        .highlight-box { 
+            background-color: rgba(13, 110, 253, 0.15); 
+            border-left: 4px solid var(--accent-color); 
+            padding: 20px; 
+            border-radius: 0 8px 8px 0; 
+            margin: 30px 0; 
+            color: var(--text-main);
+        }
+
+        /* --- CODE WINDOWS (Used for Folder Structure) --- */
+        .code-window {
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+        .code-header {
+            background: #1e293b;
+            padding: 10px 15px;
+            border-bottom: 1px solid #334155;
+            font-family: monospace;
+            color: #94a3b8;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .code-body {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            color: #e2e8f0;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* --- PAGINATION --- */
+        .lesson-page { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .lesson-page.active-page { display: block; }
+        
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .page-indicator { font-weight: 600; color: var(--text-muted); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ========================================== */
+        /* SMART PRINT & PDF MODE */
+        /* ========================================== */
+        
+        .pdf-rendering .action-bar, 
+        .pdf-rendering .pagination-controls { display: none !important; }
+
+        .pdf-rendering {
+            background-color: #ffffff !important;
+            color: #1e293b !important;
+            border: none !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        
+        .pdf-rendering h1, .pdf-rendering h2, .pdf-rendering .pdf-brand-header h2 { color: #0f172a !important; }
+        .pdf-rendering p, .pdf-rendering ul, .pdf-rendering ol, .pdf-rendering .module-name { color: #334155 !important; }
+        .pdf-rendering .course-name { color: #0d6efd !important; }
+        .pdf-rendering .doc-header { border-bottom-color: #e2e8f0 !important; }
+        .pdf-rendering .highlight-box { background-color: #f0f9ff !important; color: #1e293b !important; }
+        
+        .pdf-rendering .code-window { background-color: #0f172a !important; border-color: #334155 !important; box-shadow: none; page-break-inside: avoid; }
+        .pdf-rendering .code-header { background-color: #1e293b !important; color: #94a3b8 !important; border-bottom-color: #334155 !important; }
+        .pdf-rendering .code-body { color: #f8fafc !important; }
+
+        .pdf-rendering .lesson-page { opacity: 1 !important; margin-bottom: 30px; }
+        .pdf-rendering .lesson-page:last-of-type { page-break-after: auto; }
+
+        .pdf-rendering h2, .pdf-rendering p, .pdf-rendering li, .pdf-rendering .highlight-box { page-break-inside: avoid; } 
+
+        /* ========================================== */
+        /* HIGHLY RESPONSIVE MOBILE ADJUSTMENTS */
+        /* ========================================== */
+        @media (max-width: 768px){
+            /* Reduce body padding so cards expand horizontally */
+            body { padding: 10px; }
+            
+            /* Expand card horizontally and reduce vertical padding */
+            .document-container { padding: 30px 15px; border-radius: 8px; }
+            
+            /* Compact text for less scrolling */
+            h2 { margin-top: 25px; margin-bottom: 12px; font-size: 1.35rem; }
+            p, ul, ol { font-size: 1rem; line-height: 1.6; margin-bottom: 15px; }
+            
+            .hero-box { padding: 2rem 1.2rem !important; }
+            .hero-box h1 { font-size: 1.8rem !important; }
+            .hero-box h3 { font-size: 1.15rem !important; }
+            .hero-box p.lead { font-size: 0.95rem !important; margin-bottom: 1.2rem !important; }
+            
+            /* Compact highlight box */
+            .highlight-box { padding: 15px; margin: 20px 0; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="action-bar" id="actionBar">
+        <span class="badge text-bg-primary px-3 py-2 rounded-pill shadow-sm">Nexus Academy Official Material</span>
+        <button class="btn btn-outline-light fw-bold shadow-sm" id="pdfBtn" onclick="downloadPDF()">
+            <i class="bi bi-file-earmark-pdf-fill me-2 text-danger"></i>Download PDF
+        </button>
+    </div>
+
+    <div class="document-container" id="printableArea">
+        
+        <div class="doc-header">
+            <span class="course-name">Frontend Architecture</span>
+            <h1 id="lessonTitle">Project Planning & Scope</h1>
+            <p class="module-name">Lecture 17: Preparing for a multi-page web application.</p>
+        </div>
+
+        <div class="lesson-page active-page" id="page-1">
+            <div class="container-fluid py-4 d-flex flex-column justify-content-center align-items-center text-light">
+            
+            <div class="hero-box text-center p-4 p-md-5 rounded shadow-lg border" style="max-width: 650px; background-color: var(--primary-bg); border-color: var(--border-color) !important;">
+                
+            <span class="badge bg-primary mb-3 px-3 py-2 text-uppercase letter-spacing-1">Module 5 Start</span>
+            
+            <h1 class="display-6 fw-bold text-white mb-3">Welcome to Lecture 17</h1>
+            <h3 class="fw-light text-info mb-3 fs-5">Scoping Your First Major App</h3>
+            
+            <p class="lead mb-4 text-light opacity-75 fs-6">
+                Before writing a single line of code, professional engineers plan. In this lesson, you will learn the industry standards for defining project scope, establishing an MVP, and planning the folder structure for a multi-page web application.
+            </p>
+    
+            <button onclick="changePage(1)" class="btn btn-primary btn-lg w-100 px-4 py-2 fw-bold rounded-pill shadow-sm transition-all">
+            Begin Planning <i class="bi bi-journal-code ms-2"></i>
+            </button>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="lesson-page" id="page-2">
+            <h2>1. Defining the "Scope"</h2>
+            <p>
+            In software engineering, <strong>Scope</strong> is the strict boundary of what your application will—and will <em>not</em>—do. 
+            </p>
+            <p>
+            Junior developers often start coding immediately and continuously add random features. This leads to <strong>Feature Creep</strong>, resulting in delayed, buggy, and unfinished projects.
+            </p>
+            
+            <div class="highlight-box border-warning" style="background-color: rgba(234, 179, 8, 0.1); border-left-color: #eab308;">
+                <strong style="color: #eab308;"><i class="bi bi-star-fill me-2"></i>The MVP Rule:</strong> Always build the <strong>Minimum Viable Product (MVP)</strong> first. If you are building a social network, the MVP is the ability to post a message and see other messages. Direct messaging and custom profile themes are <em>outside</em> the MVP scope and must wait for Version 2.
+            </div>
+        </div>
+
+        <div class="lesson-page" id="page-3">
+           <h2>2. Mapping the Pages (Wireframing)</h2>
+           <p>
+            For a multi-page application (like an E-Commerce site or Student Portal), you must map out the user journey. What screens exist, and how do users navigate between them?
+           </p>
+           
+           <ul class="mb-4">
+               <li><strong>/Home:</strong> The landing page with featured products.</li>
+               <li><strong>/Shop:</strong> A grid of all available products with filters.</li>
+               <li><strong>/Cart:</strong> The checkout review page.</li>
+               <li><strong>/Profile:</strong> User settings and order history.</li>
+           </ul>
+
+           <p>
+           By listing these out, we immediately know we need a <strong>Global Navbar</strong> component that will exist across all these views so the user can easily navigate.
+           </p>
+        </div>
+
+        <div class="lesson-page" id="page-4">
+           <h2>3. Architecture & Folder Structure</h2>
+           <p>
+            In modern frontend frameworks (React, Vue, etc.), we don't dump 50 files into one folder. We organize our code cleanly based on its purpose.
+           </p>
+
+            <div class="code-window mt-3">
+                <div class="code-header">
+                    <i class="bi bi-folder2-open"></i> Industry Standard React Structure
+                </div>
+                <pre class="code-body"><code>/src
+  /assets         # Images, fonts, and global CSS
+  /components     # Reusable UI (Buttons, Navbars, Cards)
+  /pages          # Full view screens (Home.jsx, Cart.jsx)
+  /context        # Global State logic (User Login Data)
+  App.jsx         # The main file handling URL routing
+  main.jsx        # Injects the app into the DOM</code></pre>
+            </div>
+            
+            <p class="mt-3 text-muted" style="font-size: 0.95rem;">
+                <em>Notice the distinction: A <code>page</code> represents a whole screen, while a <code>component</code> is just a small piece of a screen.</em>
+            </p>
+        </div>
+            
+        <div class="lesson-page" id="page-5">
+            <h2>Why this is essential for your career:</h2>
+            <ol>
+                <li><strong>Agile Teamwork:</strong> In a professional setting, a project manager will hand you a strict "scope document" (often via Jira). You must know how to read these requirements and translate them into a component tree.</li>
+                <li><strong>Time Management:</strong> Planning your state and folders ahead of time prevents "spaghetti code," saving you hours of rewriting code when the app gets larger.</li>
+                <li><strong>Scalability:</strong> Following standard folder structures means that if a new developer joins your team tomorrow, they immediately know where to find the Navbar and where to find the Home Page.</li>
+            </ol>
+
+            <div class="highlight-box border-success" style="background-color: rgba(16, 185, 129, 0.1); border-left-color: #10b981;">
+                <strong class="text-success"><i class="bi bi-check-circle-fill me-2"></i>Action Item:</strong> Before our next lesson, sketch your app's pages on a piece of paper. Draw boxes for the components you think you will need (Navbar, Sidebar, Footer, Data Cards). 
+            </div>
+        </div>
+
+        <div class="lesson-page" id="page-6">
+            <div class="container-fluid py-4 d-flex flex-column justify-content-center align-items-center text-light">
+  
+            <div class="hero-box text-center p-4 p-md-5 rounded shadow-lg border" style="max-width: 600px; background-color: var(--primary-bg); border-color: var(--border-color) !important;">
+    
+            <div class="mb-4">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-clipboard-check-fill text-success" viewBox="0 0 16 16">
+                    <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z"/>
+                    <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z"/>
+                </svg>
+            </div>
+    
+            <h1 class="display-6 fw-bold text-white mb-3">Planning Complete!</h1>
+    
+            <p class="lead mb-4 text-light opacity-75 fs-6">
+                You now have the blueprint. In the next lesson, we will start building out this architecture using routing to bring our multi-page application to life.
+            </p>
+    
+            <hr class="border-light opacity-25 mb-4">
+    
+                <a href="lesson-18.html" class="btn btn-success btn-lg w-100 px-4 py-2 fw-bold rounded-pill shadow-sm transition-all">
+                 Next Lesson <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                </a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="pagination-controls" id="paginationControls">
+            <button class="btn btn-outline-primary text-white fw-bold px-4 rounded-pill border-primary" id="btnBack" onclick="changePage(-1)">
+                <i class="bi bi-arrow-left me-2"></i>Back
+            </button>
+            
+            <span class="page-indicator">Page <span id="currentPageNum">1</span> of <span id="totalPagesNum">6</span></span>
+            
+            <button class="btn btn-primary fw-bold px-4 rounded-pill" id="btnNext" onclick="changePage(1)">
+                Next<i class="bi bi-arrow-right ms-2"></i>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const totalPages = document.querySelectorAll('.lesson-page').length; 
+        
+        document.getElementById('totalPagesNum').innerText = totalPages;
+        updateButtons();
+
+        function changePage(direction) {
+            document.getElementById('page-' + currentPage).classList.remove('active-page');
+            currentPage += direction;
+            document.getElementById('page-' + currentPage).classList.add('active-page');
+            document.getElementById('currentPageNum').innerText = currentPage;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updateButtons();
+        }
+
+        function updateButtons() {
+            const controls = document.getElementById('paginationControls');
+            
+            if (currentPage === 1 || currentPage === totalPages) {
+                controls.style.display = 'none';
+            } else {
+                controls.style.display = 'flex';
+            }
+
+            document.getElementById('btnBack').disabled = (currentPage === 1);
+            document.getElementById('btnNext').disabled = (currentPage === totalPages);
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('printableArea');
+            const button = document.getElementById('pdfBtn');
+            const controls = document.getElementById('paginationControls');
+            const originalText = button.innerHTML;
+
+            button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
+            button.disabled = true;
+
+            element.classList.add('pdf-rendering');
+            
+            const allPages = document.querySelectorAll('.lesson-page');
+            
+            allPages.forEach((p, index) => {
+                if (index === 0 || index === allPages.length - 1) {
+                    p.style.display = 'none'; 
+                } else {
+                    p.style.display = 'block'; 
+                    
+                    if (index === allPages.length - 2) {
+                        p.style.pageBreakAfter = 'auto';
+                    } else {
+                        p.style.pageBreakAfter = 'always';
+                    }
+                }
+            });
+
+            if(controls) controls.style.display = 'none';
+
+            const title = document.getElementById('lessonTitle') ? document.getElementById('lessonTitle').innerText : 'Lesson';
+            const fileName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.pdf';
+
+            const opt = {
+                margin:       [0.5, 0.8, 0.5, 0.8], 
+                filename:     fileName,
+                image:        { type: 'jpeg', quality: 1 },
+                pagebreak:    { mode: ['css', 'legacy'], avoid: ['h2', 'p', 'li', '.highlight-box', 'img', '.code-window'] },
+                html2canvas:  { scale: 2, useCORS: true, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                element.classList.remove('pdf-rendering');
+                
+                allPages.forEach(p => {
+                    p.style.display = '';
+                    p.style.pageBreakAfter = '';
+                }); 
+                
+                document.getElementById('page-' + currentPage).classList.add('active-page'); 
+                
+                if(controls) updateButtons(); 
+                
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
